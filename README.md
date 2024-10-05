@@ -2,7 +2,25 @@
 
 Summary on how to write [`xournalpp`](https://github.com/xournalpp/xournalpp/) plugins.
 
-> In case you only want an icon for a color or more/other colors in general edit the file `$HOME/.config/xournalpp/palette.gpl` (Linux) / `%AppData%\Local\xournalpp\plugins\palette.gpl` (Windows) with custom colors
+> In case you only want an icon for a color or more/other colors in general edit the text file `$HOME/.config/xournalpp/palette.gpl` (Linux) / `%AppData%\Local\xournalpp\plugins\palette.gpl` (Windows) and either update existing colors or add new lines with custom colors:
+>
+> ```gpl
+> GIMP Palette
+> Name: Xournal Default Palette
+> #
+> 0 0 0 Black
+> 0 128 0 Green
+> 0 192 255 Light Blue
+> # ...
+> ```
+>
+> The format being:
+>
+> ```gpl
+> RED_VALUE[0-255] GREEN_VALUE[0-255] BLUE_VALUE[0-255] Color name
+> ```
+>
+> To find a custom color either use the internal color picker, search for color picker on google or use https://htmlcolors.com/google-color-picker.
 
 ## Structure[^1]
 

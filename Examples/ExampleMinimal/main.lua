@@ -10,6 +10,6 @@ end
 
 function run()
     -- e.g. switch action tool to pen and color to red
-    app.uiAction({["action"]="ACTION_TOOL_PEN"})
-    app.changeToolColor({["color"] = 0xff0000, ["selection"] = true})
+    app.uiAction({["action"]="ACTION_TOOL_PEN"});
+    app.changeToolColor({["color"] = 0xff0000, ["selection"] = true});
 end

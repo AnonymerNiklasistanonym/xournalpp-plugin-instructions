@@ -87,6 +87,8 @@ To add a plugin to the local `xournalpp` installation:
 
 ### Toolbar Shortcuts
 
+> You first need to once select `View` > `Toolbars` > `Customize` in the menubar of `xournalpp` in order to automatically trigger the creation of a custom copy of the currently used toolbar layout.
+
 To add toolbar shortcuts of plugins that register them you need to edit manually the `toolbar.ini` file found in the [Config folder](https://xournalpp.github.io/guide/file-locations/#where-to-find-xournal-files):
 
 - `$HOME/.config/xournalpp` (Linux)
@@ -116,6 +118,7 @@ After this manual step it can be moved around with the built in toolbar customiz
 - [Dialogs](./Examples/ExampleDialogs/)
 - [Global variables](./Examples/ExampleGlobalVariables/)
 - [Toolbar icon](./Examples/ExampleToolbarIcon/)
+- [External commands](./Examples/ExampleExternalCommands/)
 
 A full list of all available functions that can be used inside the plugin scripts can be found here: https://github.com/xournalpp/xournalpp/blob/master/plugins/luapi_application.def.lua
 
@@ -127,17 +130,15 @@ A full list of all available functions that can be used inside the plugin script
 
 ### Icon IDs
 
-**Linux:**
-
-- `/usr/share/icons/` or `$HOME/.local/share/icons/`:
-  - All `.svg` files seem to be useable by stripping their parent directory path and the file extension
-    - `../document-revert-rtl-symbolic.svg` -> `document-revert-rtl`
-    - `../nvtop.svg` -> `nvtop`
-  - The `xournalpp` icons can be found in `/usr/share/xournalpp/ui/iconsColor-dark/hicolor/scalable/actions/`
-
-**Windows:**
-
-> TODO
+- All `.svg` files seem to be useable by stripping their parent directory path and the file extension
+  - `../document-revert-rtl-symbolic.svg` -> `document-revert-rtl`
+  - `../nvtop.svg` -> `nvtop`
+- Directory for existing and custom icons:
+  - **Linux:** `/usr/share/icons/` or `$HOME/.local/share/icons/`
+  - **Windows:** `C:\Program Files\Xournal++\share\icons`
+- The default `xournalpp` icons can be found in:
+  - **Linux:** `/usr/share/xournalpp/ui/iconsColor-dark/hicolor/scalable/actions/`
+  - **Windows:** `C:\Program Files\Xournal++\share\xournalpp\ui\iconsColor-dark/hicolor/scalable/actions/`
 
 ## More
 

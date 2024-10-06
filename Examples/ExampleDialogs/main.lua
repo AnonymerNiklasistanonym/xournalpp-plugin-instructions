@@ -9,11 +9,11 @@ end
 
 function run()
     -- open a message box
-    result = app.msgbox("What tool do you want to use?", {[1] = "Pen", [2] = "Eraser"})
+    result = app.msgbox("What tool do you want to use?", {[1] = "Pen", [2] = "Eraser"});
     if result == 1 then
-        app.uiAction({["action"]="ACTION_TOOL_PEN"})
+        app.uiAction({["action"]="ACTION_TOOL_PEN"});
     end
     if result == 2 then
-        app.uiAction({["action"]="ACTION_TOOL_ERASER"})
+        app.uiAction({["action"]="ACTION_TOOL_ERASER"});
     end
 end

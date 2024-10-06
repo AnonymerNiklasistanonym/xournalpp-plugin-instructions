@@ -60,7 +60,7 @@ A plugin is stored in a directory with the name of it and contains:
           ["menu"] = "Change tool to red pen", -- menu bar entry text
           ["callback"] = "run",                -- function to run on click
           ["accelerator"] = "<Alt>F1",         -- keyboard shortcut
-      });
+      })
   end
 
   function run()

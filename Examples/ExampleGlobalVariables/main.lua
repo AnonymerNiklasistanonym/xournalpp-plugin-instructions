@@ -8,15 +8,17 @@ function initUi()
     -- register menu bar entry
     app.registerUi({
         ["menu"] = "Get program run time and date", -- menu bar entry text
-        ["callback"] = "run",                       -- function to run on click
-        ["accelerator"] = "<Ctrl>F2",               -- keyboard shortcut
-    });
+        ["callback"] = "run", -- function to run on click
+        ["accelerator"] = "<Ctrl>F2", -- keyboard shortcut
+    })
     -- initalize global variable
-    globalTime = os.time();
+    globalTime = os.time()
 end
 
 function run()
     -- open a message box with the current date and the total run time
     local timeDelta = os.time() - globalTime;
-    app.msgbox(os.date("Today is %A, in %B") .. " the program was running for " .. tostring(timeDelta) ..  "s", {[1] = "Ok"});
+    app.msgbox(
+        os.date("Today is %A, in %B") .. " the program was running for " ..
+            tostring(timeDelta) .. "s", {[1] = "Ok"})
 end

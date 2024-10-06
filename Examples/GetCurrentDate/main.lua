@@ -16,6 +16,5 @@ function run()
     -- Linux
     os.execute("echo '" .. getCurrentDate() .. "' | xclip -selection clipboard");
     -- Windows
-    os.execute('"' .. getCurrentDate() .. '" | clip.exe');
-    | clip.exe;
+    os.execute("echo " .. getCurrentDate() .. " | clip.exe");
 end

@@ -1,6 +1,8 @@
 local a4PageHeightXournal = 842;
 local a4PageHeightMm = 297;
 local mmInXournalUnit = a4PageHeightXournal / a4PageHeightMm * 0.1;
+-- Scale factor for z-axis depth (isometric projections)
+local z_axis_scale = 0.7
 
 function initUi()
     -- register menu bar entry and toolbar icon
@@ -27,60 +29,64 @@ local function create_line_stroke(x1, y1, x2, y2, width, color)
     }
 end
 
--- Function to create an arrow at the end of an axis
-local function create_arrow_strokes(x, y, direction, size, width, color)
+local function degrees_to_radians(degrees) return degrees * (math.pi / 180) end
+
+local function rotate_point(x, y, cx, cy, theta)
+    -- Translate the point to the origin (relative to the center)
+    local translated_x = x - cx
+    local translated_y = y - cy
+
+    -- Apply the rotation matrix
+    local rotated_x = translated_x * math.cos(theta) - translated_y *
+                          math.sin(theta)
+    local rotated_y = translated_x * math.sin(theta) + translated_y *
+                          math.cos(theta)
+
+    -- Translate the point back to its original position
+    local final_x = rotated_x + cx
+    local final_y = rotated_y + cy
+
+    return final_x, final_y
+end
+
+-- Function to create an arrow at the end of an axis (at 0 degree roation it's an up arrow)
+local function create_arrow_strokes(x, y, rotationDegrees, size, width, color)
     local arrow_strokes = {}
 
-    if direction == "right" then
-        -- Arrow pointing to the right (x-axis)
-        -- (x-size,y-size/2) \            +
-        --                    \           |
-        --                     \          |
-        --                      \         |
-        --                       > (x,y)  | size
-        --                      /         |
-        --                     /          |
-        --                    /           |
-        -- (x-size,y+size/2) /            +
-        --                 +------+
-        --                   size
-        table.insert(arrow_strokes, create_line_stroke(x - size, y - size / 2,
-                                                       x, y, width, color))
-        table.insert(arrow_strokes, create_line_stroke(x - size, y + size / 2,
-                                                       x, y, width, color))
-    elseif direction == "up" then
-        -- Arrow pointing upwards (y-axis)
-        --                    (x,y)                     +
-        --                      ^                       |
-        --                     / \                      | size
-        --                    /   \                     |
-        -- (x-size/2,y+size) /     \ (x+size/2,y+size)  +
-        --                   +-----+
-        --                    size
+    -- Arrow pointing upwards at 0 rotationDegrees (y-axis)
+    --                    (x,y)                     +
+    --                      ^                       |
+    --                     / \                      | size
+    --                    /   \                     |
+    -- (x-size/2,y+size) /     \ (x+size/2,y+size)  +
+    --                   +-----+
+    --                    size
 
-        table.insert(arrow_strokes, create_line_stroke(x - size / 2, y + size,
-                                                       x, y, width, color))
-        table.insert(arrow_strokes, create_line_stroke(x + size / 2, y + size,
-                                                       x, y, width, color))
-    end
+    local x1, y1 = rotate_point(x - size / 2, y + size, x, y,
+                                degrees_to_radians(rotationDegrees))
+    local x2, y2 = rotate_point(x + size / 2, y + size, x, y,
+                                degrees_to_radians(rotationDegrees))
+    table.insert(arrow_strokes, create_line_stroke(x1, y1, x, y, width, color))
+    table.insert(arrow_strokes, create_line_stroke(x2, y2, x, y, width, color))
 
     return arrow_strokes
 end
 
 -- Function to draw the Gaussian grid with axes, tick marks, and arrows centered on the page
+-- type: Type of graph (2D, 2DN, 3D, 3DN)
 -- step: Distance between tick marks
 -- rangeValues: Distance from 0 to max/min in all directions
-local function create_gaussian_grid(step, rangeValues)
+local function create_gaussian_grid(type, step, rangeValues)
     local color = 0x000000
     -- Line thickness
-    local widthAxis = 4
-    local widthTick = 2
-    local widthArrow = 4
+    local widthAxis = 2
+    local widthTick = 1
+    local widthArrow = widthAxis
     -- Arrow
     local arrowSize = 5
     local arrowSpacing = 3
     -- Ticks
-    local tickLength = 2
+    local tickLength = 1.5
 
     -- Calculate the real length of the coordinate system lines
     local range = step * rangeValues;
@@ -113,46 +119,114 @@ local function create_gaussian_grid(step, rangeValues)
     -- luacheck: pop
 
     -- Add the x-axis
-    table.insert(strokes,
-                 create_line_stroke(centerX - range - arrowSize * arrowSpacing,
-                                    centerY,
-                                    centerX + range + arrowSize * arrowSpacing,
-                                    centerY, widthAxis, color));
+    -- (positive axis stroke)
+    table.insert(strokes, create_line_stroke(centerX, centerY,
+                                             centerX + range + arrowSize *
+                                                 arrowSpacing, centerY,
+                                             widthAxis, color))
+    if type == "2DN" or type == "3DN" then
+        -- (negative axis stroke)
+        table.insert(strokes,
+                     create_line_stroke(
+                         centerX - range - arrowSize * arrowSpacing, centerY,
+                         centerX, centerY, widthAxis, color))
+    end
     -- Add the y-axis
+    -- (positive axis stroke)
     table.insert(strokes,
                  create_line_stroke(centerX,
                                     centerY - range - arrowSize * arrowSpacing,
-                                    centerX,
-                                    centerY + range + arrowSize * arrowSpacing,
-                                    widthAxis, color));
+                                    centerX, centerY, widthAxis, color))
+    if type == "2DN" or type == "3DN" then
+        -- (negative axis stroke)
+        table.insert(strokes, create_line_stroke(centerX, centerY, centerX,
+                                                 centerY + range + arrowSize *
+                                                     arrowSpacing, widthAxis,
+                                                 color))
+    end
+
+    -- If the graph type is 3D, add the z-axis
+    if type == "3D" or type == "3DN" then
+        -- (positive axis stroke)
+        table.insert(strokes, create_line_stroke(centerX, centerY, centerX +
+                                                     (range + arrowSize *
+                                                         arrowSpacing) *
+                                                     z_axis_scale, centerY -
+                                                     (range + arrowSize *
+                                                         arrowSpacing) *
+                                                     z_axis_scale, widthAxis,
+                                                 color))
+
+        if type == "3DN" then
+            -- (negative axis stroke)
+            table.insert(strokes,
+                         create_line_stroke(
+                             centerX - (range + arrowSize * arrowSpacing) *
+                                 z_axis_scale, centerY +
+                                 (range + arrowSize * arrowSpacing) *
+                                 z_axis_scale, centerX, centerY, widthAxis,
+                             color))
+        end
+    end
 
     -- Add arrows to the positive end of the axes
-    local arrowStrokesY = create_arrow_strokes(centerX + range + arrowSize * 3,
-                                               centerY, "right", arrowSize,
-                                               widthArrow, color)
-    local arrowStrokesX = create_arrow_strokes(centerX,
-                                               centerY - range - arrowSize * 3,
-                                               "up", arrowSize, widthArrow,
-                                               color)
+    local arrowStrokesY = create_arrow_strokes(
+                              centerX + range + arrowSize * arrowSpacing,
+                              centerY, 90, arrowSize, widthArrow, color)
+    local arrowStrokesX = create_arrow_strokes(centerX, centerY - range -
+                                                   arrowSize * arrowSpacing, 0,
+                                               arrowSize, widthArrow, color)
     for _, stroke in ipairs(arrowStrokesY) do table.insert(strokes, stroke) end
     for _, stroke in ipairs(arrowStrokesX) do table.insert(strokes, stroke) end
 
+    -- Add z-axis arrow if 3D
+    if type == "3D" or type == "3DN" then
+        local arrowStrokesZ = create_arrow_strokes(centerX +
+                                                       (range + arrowSize *
+                                                           arrowSpacing) *
+                                                       z_axis_scale, centerY -
+                                                       (range + arrowSize *
+                                                           arrowSpacing) *
+                                                       z_axis_scale, 45,
+                                                   arrowSize, widthArrow, color)
+        for _, stroke in ipairs(arrowStrokesZ) do
+            table.insert(strokes, stroke)
+        end
+    end
+
     -- Add tick marks
-    for index = -rangeValues, rangeValues, 1 do
+    local indexRangeStart = 0
+    if type == "2DN" or type == "3DN" then indexRangeStart = -rangeValues end
+    for index = indexRangeStart, rangeValues, 1 do
         if index ~= 0 then -- Skip the center of the axis (origin)
-            -- Tick mark: a short vertical line centered on the x-axis, with doubled length and spacing
+            -- Tick mark x-axis
             table.insert(strokes,
                          create_line_stroke(centerX + (index * step),
                                             centerY - tickLength,
                                             centerX + (index * step),
                                             centerY + tickLength, widthTick,
                                             color))
+            -- Tick mark y-axis
             table.insert(strokes,
                          create_line_stroke(centerX - tickLength,
-                                            centerY + (index * step),
+                                            centerY - (index * step),
                                             centerX + tickLength,
-                                            centerY + (index * step), widthTick,
+                                            centerY - (index * step), widthTick,
                                             color))
+            -- Tick mark z-axis
+            if type == "3D" or type == "3DN" then
+                -- local x1, y1 = rotate_point(x - size / 2, y + size, x, y, degrees_to_radians(rotationDegrees))
+                table.insert(strokes,
+                             create_line_stroke(
+                                 centerX + (index * step) * z_axis_scale -
+                                     tickLength * z_axis_scale,
+                                 centerY - (index * step) * z_axis_scale -
+                                     tickLength * z_axis_scale,
+                                 centerX + (index * step) * z_axis_scale +
+                                     tickLength * z_axis_scale, centerY -
+                                     (index * step) * z_axis_scale + tickLength *
+                                     z_axis_scale, widthTick, color))
+            end
         end
     end
 
@@ -161,6 +235,24 @@ local function create_gaussian_grid(step, rangeValues)
 end
 
 function run()
+    local type = app.msgbox("Coordinate system type", {
+        [1] = "2D (no negative axes)",
+        [2] = "2D",
+        [3] = "3D (no negative axes)",
+        [4] = "3D",
+    })
+    if type == 1 then
+        type = "2D"
+    elseif type == 2 then
+        type = "2DN"
+    elseif type == 3 then
+        type = "3D"
+    elseif type == 4 then
+        type = "3DN"
+    else
+        -- If a unsupported type is given exit (also -4 if dialog is exited)
+        return -1
+    end
     local step = app.msgbox("Step size", {
         [25] = "0.25cm",
         [50] = "0.5cm",
@@ -170,6 +262,10 @@ function run()
         [300] = "4cm",
         [500] = "5cm",
     })
+    if step < 1 then
+        -- If a step size of less than 1mm is given exit (also -4 if dialog is exited)
+        return -1
+    end
     local range = app.msgbox("Range [0...max/min]", {
         [1] = "1",
         [2] = "2",
@@ -179,8 +275,12 @@ function run()
         [15] = "15",
         [20] = "20",
     })
+    if range < 1 then
+        -- If a range of less than 1 is given exit (also -4 if dialog is exited)
+        return -1
+    end
 
-    -- add all strokes and then refresh the page so that the changes get rendered
-    create_gaussian_grid(step * mmInXournalUnit, range)
+    -- Add all strokes and then refresh the page so that the changes get rendered
+    create_gaussian_grid(type, step * mmInXournalUnit, range)
     app.refreshPage()
 end

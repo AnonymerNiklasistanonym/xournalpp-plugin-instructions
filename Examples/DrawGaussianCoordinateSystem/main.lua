@@ -2,7 +2,7 @@ local a4PageHeightXournal = 842;
 local a4PageHeightMm = 297;
 local mmInXournalUnit = a4PageHeightXournal / a4PageHeightMm * 0.1;
 -- Scale factor for z-axis depth (isometric projections)
-local z_axis_scale = 0.7
+local z_axis_scale = math.sqrt(2) / 2
 
 function initUi()
     -- register menu bar entry and toolbar icon
@@ -75,8 +75,9 @@ end
 -- Function to draw the Gaussian grid with axes, tick marks, and arrows centered on the page
 -- type: Type of graph (2D, 2DN, 3D, 3DN)
 -- step: Distance between tick marks
--- rangeValues: Distance from 0 to max/min in all directions
-local function create_gaussian_grid(type, step, rangeValues)
+-- rangesMax = {["X"] = range,["Y"] = range,["Z"] = range}
+-- rangesMin = {["X"] = -range,["Y"] = -range,["Z"] = -range,}
+local function create_gaussian_grid(type, step, rangesMax, rangesMin)
     local color = 0x000000
     -- Line thickness
     local widthAxis = 2
@@ -88,10 +89,7 @@ local function create_gaussian_grid(type, step, rangeValues)
     -- Ticks
     local tickLength = 1.5
 
-    -- Calculate the real length of the coordinate system lines
-    local range = step * rangeValues;
-
-    -- Calculate the center of the page
+    -- Calculate the center of the page <=> (0,0)
     local docStructure = app.getDocumentStructure()
     local pageWidth =
         docStructure["pages"][docStructure["currentPage"]]["pageWidth"]
@@ -120,27 +118,29 @@ local function create_gaussian_grid(type, step, rangeValues)
 
     -- Add the x-axis
     -- (positive axis stroke)
-    table.insert(strokes, create_line_stroke(centerX, centerY,
-                                             centerX + range + arrowSize *
-                                                 arrowSpacing, centerY,
-                                             widthAxis, color))
+    table.insert(strokes, create_line_stroke(centerX, centerY, centerX +
+                                                 rangesMax["X"] * step +
+                                                 arrowSize * arrowSpacing,
+                                             centerY, widthAxis, color))
     if type == "2DN" or type == "3DN" then
         -- (negative axis stroke)
         table.insert(strokes,
                      create_line_stroke(
-                         centerX - range - arrowSize * arrowSpacing, centerY,
-                         centerX, centerY, widthAxis, color))
+                         centerX - rangesMin["X"] * -step - arrowSize *
+                             arrowSpacing, centerY, centerX, centerY, widthAxis,
+                         color))
     end
     -- Add the y-axis
     -- (positive axis stroke)
-    table.insert(strokes,
-                 create_line_stroke(centerX,
-                                    centerY - range - arrowSize * arrowSpacing,
-                                    centerX, centerY, widthAxis, color))
+    table.insert(strokes, create_line_stroke(centerX,
+                                             centerY - rangesMax["Y"] * step -
+                                                 arrowSize * arrowSpacing,
+                                             centerX, centerY, widthAxis, color))
     if type == "2DN" or type == "3DN" then
         -- (negative axis stroke)
         table.insert(strokes, create_line_stroke(centerX, centerY, centerX,
-                                                 centerY + range + arrowSize *
+                                                 centerY + rangesMin["Y"] *
+                                                     -step + arrowSize *
                                                      arrowSpacing, widthAxis,
                                                  color))
     end
@@ -149,43 +149,51 @@ local function create_gaussian_grid(type, step, rangeValues)
     if type == "3D" or type == "3DN" then
         -- (positive axis stroke)
         table.insert(strokes, create_line_stroke(centerX, centerY, centerX +
-                                                     (range + arrowSize *
+                                                     (rangesMax["Z"] * step +
+                                                         arrowSize *
                                                          arrowSpacing) *
                                                      z_axis_scale, centerY -
-                                                     (range + arrowSize *
+                                                     (rangesMax["Z"] * step +
+                                                         arrowSize *
                                                          arrowSpacing) *
                                                      z_axis_scale, widthAxis,
                                                  color))
-
-        if type == "3DN" then
-            -- (negative axis stroke)
-            table.insert(strokes,
-                         create_line_stroke(
-                             centerX - (range + arrowSize * arrowSpacing) *
-                                 z_axis_scale, centerY +
-                                 (range + arrowSize * arrowSpacing) *
-                                 z_axis_scale, centerX, centerY, widthAxis,
-                             color))
-        end
+    end
+    if type == "3DN" then
+        -- (negative axis stroke)
+        table.insert(strokes, create_line_stroke(centerX -
+                                                     (-rangesMin["Z"] * step +
+                                                         arrowSize *
+                                                         arrowSpacing) *
+                                                     z_axis_scale, centerY +
+                                                     (-rangesMin["Z"] * step +
+                                                         arrowSize *
+                                                         arrowSpacing) *
+                                                     z_axis_scale, centerX,
+                                                 centerY, widthAxis, color))
     end
 
     -- Add arrows to the positive end of the axes
-    local arrowStrokesY = create_arrow_strokes(
-                              centerX + range + arrowSize * arrowSpacing,
-                              centerY, 90, arrowSize, widthArrow, color)
-    local arrowStrokesX = create_arrow_strokes(centerX, centerY - range -
+    local arrowStrokesY = create_arrow_strokes(centerX,
+                                               centerY - rangesMax["Y"] * step -
                                                    arrowSize * arrowSpacing, 0,
                                                arrowSize, widthArrow, color)
+    local arrowStrokesX = create_arrow_strokes(
+                              centerX + rangesMax["X"] * step + arrowSize *
+                                  arrowSpacing, centerY, 90, arrowSize,
+                              widthArrow, color)
     for _, stroke in ipairs(arrowStrokesY) do table.insert(strokes, stroke) end
     for _, stroke in ipairs(arrowStrokesX) do table.insert(strokes, stroke) end
 
     -- Add z-axis arrow if 3D
     if type == "3D" or type == "3DN" then
         local arrowStrokesZ = create_arrow_strokes(centerX +
-                                                       (range + arrowSize *
+                                                       (rangesMax["Z"] * step +
+                                                           arrowSize *
                                                            arrowSpacing) *
                                                        z_axis_scale, centerY -
-                                                       (range + arrowSize *
+                                                       (rangesMax["Z"] * step +
+                                                           arrowSize *
                                                            arrowSpacing) *
                                                        z_axis_scale, 45,
                                                    arrowSize, widthArrow, color)
@@ -195,43 +203,76 @@ local function create_gaussian_grid(type, step, rangeValues)
     end
 
     -- Add tick marks
-    local indexRangeStart = 0
-    if type == "2DN" or type == "3DN" then indexRangeStart = -rangeValues end
-    for index = indexRangeStart, rangeValues, 1 do
-        if index ~= 0 then -- Skip the center of the axis (origin)
-            -- Tick mark x-axis
-            table.insert(strokes,
-                         create_line_stroke(centerX + (index * step),
-                                            centerY - tickLength,
-                                            centerX + (index * step),
-                                            centerY + tickLength, widthTick,
-                                            color))
-            -- Tick mark y-axis
-            table.insert(strokes,
-                         create_line_stroke(centerX - tickLength,
-                                            centerY - (index * step),
-                                            centerX + tickLength,
-                                            centerY - (index * step), widthTick,
-                                            color))
-            -- Tick mark z-axis
-            if type == "3D" or type == "3DN" then
-                -- local x1, y1 = rotate_point(x - size / 2, y + size, x, y, degrees_to_radians(rotationDegrees))
-                table.insert(strokes,
-                             create_line_stroke(
-                                 centerX + (index * step) * z_axis_scale -
-                                     tickLength * z_axis_scale,
-                                 centerY - (index * step) * z_axis_scale -
-                                     tickLength * z_axis_scale,
-                                 centerX + (index * step) * z_axis_scale +
-                                     tickLength * z_axis_scale, centerY -
-                                     (index * step) * z_axis_scale + tickLength *
-                                     z_axis_scale, widthTick, color))
+    local axes = {"X", "Y", "Z"}
+    if type == "2DN" or type == "2D" then axes = {"X", "Y"} end
+    for _, axis in ipairs(axes) do
+        local indexRangeStart = 0
+        if type == "2DN" or type == "3DN" then
+            indexRangeStart = rangesMin[axis]
+        end
+        for index = indexRangeStart, rangesMax[axis], 1 do
+            if index ~= 0 then -- Skip the center of the axis (origin)
+                if axis == "X" then
+                    -- Tick mark x-axis
+                    table.insert(strokes,
+                                 create_line_stroke(centerX + (index * step),
+                                                    centerY - tickLength,
+                                                    centerX + (index * step),
+                                                    centerY + tickLength,
+                                                    widthTick, color))
+                elseif axis == "Y" then
+                    -- Tick mark y-axis
+                    table.insert(strokes,
+                                 create_line_stroke(centerX - tickLength,
+                                                    centerY - (index * step),
+                                                    centerX + tickLength,
+                                                    centerY - (index * step),
+                                                    widthTick, color))
+                elseif axis == "Z" then
+                    -- Tick mark z-axis
+                    if type == "3D" or type == "3DN" then
+                        table.insert(strokes,
+                                     create_line_stroke(
+                                         centerX + (index * step) * z_axis_scale -
+                                             tickLength * z_axis_scale,
+                                         centerY - (index * step) * z_axis_scale -
+                                             tickLength * z_axis_scale,
+                                         centerX + (index * step) * z_axis_scale +
+                                             tickLength * z_axis_scale,
+                                         centerY - (index * step) * z_axis_scale +
+                                             tickLength * z_axis_scale,
+                                         widthTick, color))
+                    end
+                end
             end
         end
     end
 
     -- Add all the strokes to the Xournal++ document in one grouped action that can be undone
     app.addStrokes({["strokes"] = strokes, ["allowUndoRedoAction"] = "grouped"})
+end
+
+local function create_range_dialog(axis, isMax)
+    local multiplier = 1
+    if not isMax then multiplier = -1 end
+    local options = {
+        [1] = "" .. (1 * multiplier),
+        [2] = "" .. (2 * multiplier),
+        [3] = "" .. (3 * multiplier),
+        [4] = "" .. (4 * multiplier),
+        [5] = "" .. (5 * multiplier),
+        [6] = "" .. (6 * multiplier),
+        [7] = "" .. (7 * multiplier),
+        [8] = "" .. (8 * multiplier),
+        [9] = "" .. (9 * multiplier),
+        [10] = "" .. (10 * multiplier),
+        [15] = "" .. (15 * multiplier),
+        [20] = "" .. (20 * multiplier),
+    }
+    local messageRange = "[0...max]"
+    if not isMax then messageRange = "[min...0]" end
+    return app.msgbox("Select " .. axis .. " axis range " .. messageRange,
+                      options)
 end
 
 function run()
@@ -253,7 +294,7 @@ function run()
         -- If a unsupported type is given exit (also -4 if dialog is exited)
         return -1
     end
-    local step = app.msgbox("Step size", {
+    local step = app.msgbox("Select step size", {
         [25] = "0.25cm",
         [50] = "0.5cm",
         [100] = "1cm",
@@ -266,7 +307,8 @@ function run()
         -- If a step size of less than 1mm is given exit (also -4 if dialog is exited)
         return -1
     end
-    local range = app.msgbox("Range [0...max/min]", {
+    local range = app.msgbox("Select range [min...0...max]", {
+        [0] = "Custom",
         [1] = "1",
         [2] = "2",
         [4] = "4",
@@ -275,12 +317,31 @@ function run()
         [15] = "15",
         [20] = "20",
     })
-    if range < 1 then
-        -- If a range of less than 1 is given exit (also -4 if dialog is exited)
+    local rangesMax = {["X"] = range, ["Y"] = range, ["Z"] = range}
+    local rangesMin = {["X"] = -range, ["Y"] = -range, ["Z"] = -range}
+    if range < 0 then
+        -- If a range of less than 0 is given exit (also -4 if dialog is exited)
         return -1
+    elseif range == 0 then
+        -- If custom is selected create custom dialogs for each axis
+        local axes = {"X", "Y", "Z"}
+        if type == "2DN" or type == "2D" then axes = {"X", "Y"} end
+        for _, axis in ipairs(axes) do
+            rangesMax[axis] = create_range_dialog(axis, true)
+            if rangesMax[axis] < 1 then return -1 end
+            if type ~= "2D" and type ~= "3D" then
+                rangesMin[axis] = create_range_dialog(axis, false)
+                if rangesMin[axis] < 1 then
+                    return -1
+                else
+                    -- Fix negative value
+                    rangesMin[axis] = -rangesMin[axis]
+                end
+            end
+        end
     end
 
     -- Add all strokes and then refresh the page so that the changes get rendered
-    create_gaussian_grid(type, step * mmInXournalUnit, range)
+    create_gaussian_grid(type, step * mmInXournalUnit, rangesMax, rangesMin)
     app.refreshPage()
 end

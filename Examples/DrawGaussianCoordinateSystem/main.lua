@@ -1,10 +1,8 @@
--- TODO All widths seem to be ignore for some reason
--- Height of a A4 page in xournal units
-local a4PageHeightXournal = 842
--- Height of a A4 page in mm
-local a4PageHeightMm = 297
--- Conversion factor of 1mm in xournal units
-local mmInXournalUnit = a4PageHeightXournal / a4PageHeightMm
+-- Import functions from external files
+getDocumentCenter = require("getDocumentCenter")
+getCurrentToolColor = require("getCurrentToolColor")
+mmInXournalUnit = require("mmInXournalUnit")
+
 -- Scale factor for z-axis depth (isometric projections)
 local zAxisIsometricScale = math.sqrt(2) / 2
 -- Input option list: axes
@@ -77,17 +75,6 @@ local function createArrowStrokes(x, y, rotationDegrees, size, width, color)
 
     return arrow_strokes
 end
-
-local function getDocumentCenter()
-    local docStructure = app.getDocumentStructure()
-    local pageWidth =
-        docStructure["pages"][docStructure["currentPage"]]["pageWidth"]
-    local pageHeight =
-        docStructure["pages"][docStructure["currentPage"]]["pageHeight"]
-    return pageWidth / 2, pageHeight / 2
-end
-
-local function getCurrentToolColor() return app.getToolInfo("active")["color"] end
 
 -- Function to draw the Gaussian grid with axes, tick marks, and arrows centered on the page
 -- type: Type of graph (2D, 2DN, 3D, 3DN)

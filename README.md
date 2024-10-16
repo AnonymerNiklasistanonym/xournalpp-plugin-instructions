@@ -114,11 +114,11 @@ After this manual step it can be moved around with the built in toolbar customiz
 
 ## Write
 
-- [Minimal](./Examples/ExampleMinimal/)
-- [Dialogs](./Examples/ExampleDialogs/)
-- [Global variables](./Examples/ExampleGlobalVariables/)
-- [Toolbar icon](./Examples/ExampleToolbarIcon/)
-- [External commands](./Examples/ExampleExternalCommands/)
+- [Minimal](./examples/ExampleMinimal/)
+- [Dialogs](./examples/ExampleDialogs/)
+- [Global variables](./examples/ExampleGlobalVariables/)
+- [Toolbar icon](./examples/ExampleToolbarIcon/)
+- [External commands](./examples/ExampleExternalCommands/)
 
 A full list of all available functions that can be used inside the plugin scripts can be found here: https://github.com/xournalpp/xournalpp/blob/master/plugins/luapi_application.def.lua
 

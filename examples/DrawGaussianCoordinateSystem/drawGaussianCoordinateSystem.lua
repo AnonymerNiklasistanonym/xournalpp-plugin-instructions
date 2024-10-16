@@ -1,26 +1,7 @@
--- Import functions from external files
-getDocumentCenter = require("getDocumentCenter")
-getCurrentToolColor = require("getCurrentToolColor")
-mmInXournalUnit = require("mmInXournalUnit")
-
 -- Scale factor for z-axis depth (isometric projections)
 local zAxisIsometricScale = math.sqrt(2) / 2
 -- Input option list: axes
 local inputListAxes = {"X", "Y", "Z"}
--- Input option list: range
-local inputListRange = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 15, 20}
--- Input option list: tick spacing
-local inputListTickSpacingInMm = {2.5, 5, 7.5, 10, 15, 20, 30, 40, 50}
-
-function initUi()
-    -- Register menu bar entry and toolbar icon
-    app.registerUi({
-        ["menu"] = "Draw a Gaussian coordinate system in the middle of the page", -- Menu bar entry/tooltip text
-        ["callback"] = "run", -- Global function to run on click
-        ["toolbarId"] = "DRAW_GAUSSIAN_COORDINATE_SYSTEM_SHORTCUT", -- Toolbar ID
-        ["iconName"] = "icon-gaussian-coordinate-system", -- The icon ID
-    })
-end
 
 -- Function to create a stroke for a line between two points (x1, y1) and (x2, y2)
 -- (x1, y1) ---------- (x2, y2)
@@ -84,20 +65,23 @@ end
 -- color (the color code e.g. 0x000000 for black)
 local function drawGaussianCoordinateSystem(type, tickSpacing, rangesMax,
                                             rangesMin, color)
-    -- TODO Use current tool size as width
-    -- app.msgbox("Active tool size value " .. app.getToolInfo("active")["size"]["value"] * 10, {})
-    -- Line thickness
+    assert(type == "2D" or type == "2DN" or type == "3D" or type == "3DN",
+           "coordinate type " .. type .. " not supported")
+    assert(tonumber(tickSpacing),
+           "tick spacing " .. tickSpacing .. " not a number")
+    -- TODO width seems to be ignored
+    -- line thickness
     local widthAxis = 2
     local widthTick = 10
     local widthArrow = widthAxis
-    -- Arrow
+    -- arrow
     local arrowSize = 5
     local arrowSpacing = 3
-    -- Ticks
+    -- ticks
     local tickLength = 1.5
-    -- Center of the page <=> (0,0) of coordinate system
+    -- center of the page <=> (0,0) of coordinate system
     local centerX, centerY = getDocumentCenter()
-    -- Table to hold all the strokes
+    -- table to hold all the strokes
     local strokes = {}
 
     -- luacheck: push ignore
@@ -115,7 +99,7 @@ local function drawGaussianCoordinateSystem(type, tickSpacing, rangesMax,
     --                                                                             range
     -- luacheck: pop
 
-    -- Add axes
+    -- add axes
     local strokePosXAxis = createLineStroke(centerX, centerY, centerX +
                                                 rangesMax["X"] * tickSpacing +
                                                 arrowSize * arrowSpacing,
@@ -169,7 +153,7 @@ local function drawGaussianCoordinateSystem(type, tickSpacing, rangesMax,
         table.insert(strokes, strokeNegZAxis)
     end
 
-    -- Add arrows to the positive end of the axes
+    -- add arrows to the positive end of the axes
     local arrowStrokesY = createArrowStrokes(centerX,
                                              centerY - rangesMax["Y"] *
                                                  tickSpacing - arrowSize *
@@ -198,14 +182,14 @@ local function drawGaussianCoordinateSystem(type, tickSpacing, rangesMax,
         end
     end
 
-    -- Add ticks
+    -- add ticks
     for _, axis in ipairs(inputListAxes) do
         local indexRangeStart = 0
         if type == "2DN" or type == "3DN" then
             indexRangeStart = rangesMin[axis]
         end
         for index = indexRangeStart, rangesMax[axis], 1 do
-            if index ~= 0 then -- Skip the center of the axis (origin)
+            if index ~= 0 then -- skip the center of the axis (origin)
                 if axis == "X" then
                     table.insert(strokes,
                                  createLineStroke(
@@ -242,100 +226,8 @@ local function drawGaussianCoordinateSystem(type, tickSpacing, rangesMax,
         end
     end
 
-    -- Add all the strokes to the Xournal++ document in one grouped action that can be undone
+    -- add all the strokes to the xournalpp document in one grouped action that can be undone
     app.addStrokes({["strokes"] = strokes, ["allowUndoRedoAction"] = "grouped"})
 end
 
-local function createRangeDialog(axis, isMax)
-    local multiplier = 1
-    if not isMax then multiplier = -1 end
-    local options = {}
-    for _, inputRange in ipairs(inputListRange) do
-        options[inputRange] = inputRange * multiplier
-    end
-    local messageRange = "[0...max]"
-    if not isMax then messageRange = "[min...0]" end
-    return app.msgbox("Select " .. axis .. " axis range " .. messageRange,
-                      options)
-end
-
-local function roundToTwoOrNoDecimals(num)
-    -- Round to two decimal places
-    local rounded = math.floor(num * 100 + 0.5) / 100
-    -- Remove trailing zeros if they exist
-    if rounded == math.floor(rounded) then
-        return string.format("%d", rounded) -- No decimal places
-    else
-        return string.format("%.2f", rounded) -- Two decimal places
-    end
-end
-
-function run()
-    local type = app.msgbox("Coordinate system type", {
-        [1] = "2D (no negative axes)",
-        [2] = "2D",
-        [3] = "3D (no negative axes)",
-        [4] = "3D",
-    })
-    if type == 1 then
-        type = "2D"
-    elseif type == 2 then
-        type = "2DN"
-    elseif type == 3 then
-        type = "3D"
-    elseif type == 4 then
-        type = "3DN"
-    else
-        -- If a unsupported type is given exit (also -4 if dialog is exited)
-        return -1
-    end
-    local tickSpacingOptions = {}
-    for _, inputTickSpacingInMm in ipairs(inputListTickSpacingInMm) do
-        tickSpacingOptions[inputTickSpacingInMm] =
-            roundToTwoOrNoDecimals(inputTickSpacingInMm / 10) .. "cm"
-    end
-    local tickSpacing = app.msgbox("Select tick spacing", tickSpacingOptions)
-    if tickSpacing < 1 then
-        -- If a tick spacing of less than 1mm is given exit (also -4 if dialog is exited)
-        return -1
-    end
-    local rangeOptions = {[0] = "Custom"}
-    for _, inputRange in ipairs(inputListRange) do
-        rangeOptions[inputRange] = inputRange
-    end
-    local range = app.msgbox("Select axes ranges [min...0...max]", rangeOptions)
-    local rangesMax = {}
-    local rangesMin = {}
-    for _, inputAxis in ipairs(inputListAxes) do
-        rangesMax[inputAxis] = range
-        rangesMin[inputAxis] = -range
-    end
-    if range < 0 then
-        -- If a range of less than 0 is given exit (also -4 if dialog is exited)
-        return -1
-    elseif range == 0 then
-        -- If custom is selected create custom dialogs for each axis
-        for _, axis in ipairs(inputListAxes) do
-            if axis == "Z" and type ~= "3D" and type ~= "3DN" then
-                goto continue
-            end
-            rangesMax[axis] = createRangeDialog(axis, true)
-            if rangesMax[axis] < 1 then return -1 end
-            if type ~= "2D" and type ~= "3D" then
-                rangesMin[axis] = createRangeDialog(axis, false)
-                if rangesMin[axis] < 1 then
-                    return -1
-                else
-                    -- Fix negative value (ask for positive values to catch -4 escape)
-                    rangesMin[axis] = -rangesMin[axis]
-                end
-            end
-            ::continue::
-        end
-    end
-
-    -- Add all strokes and then refresh the page so that the changes get rendered
-    drawGaussianCoordinateSystem(type, tickSpacing * mmInXournalUnit, rangesMax,
-                                 rangesMin, getCurrentToolColor())
-    app.refreshPage()
-end
+return drawGaussianCoordinateSystem

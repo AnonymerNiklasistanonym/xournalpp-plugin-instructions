@@ -1,0 +1,2 @@
+Registers a toolbar icon with which the Windows 11 Screenclip process can be triggered.
+It allows you to make a screenshot and copy it to the clipboard (can be full screen, selection or freeform).

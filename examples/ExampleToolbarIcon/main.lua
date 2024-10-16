@@ -10,7 +10,7 @@ function initUi()
 end
 
 function run()
-    -- switch action tool to pen and color to red
+    -- switch action tool to pen and color to blue
     app.uiAction({["action"] = "ACTION_TOOL_PEN"})
     app.changeToolColor({["color"] = 0x0000ff, ["selection"] = true})
 end

@@ -1,4 +1,7 @@
-local function getCurrentDate() return os.date('%Y.%m.%d'); end
+local fontSize = 12
+local fontColor = 0x000000
+
+local function getCurrentDate() return os.date('%Y.%m.%d') end
 
 function initUi()
     -- register menu bar entry and toolbar icon
@@ -11,8 +14,34 @@ function initUi()
 end
 
 function run()
+    local dateString = getCurrentDate()
+
+    if app.addTexts ~= nil then
+        local docStructure = app.getDocumentStructure()
+        local toolInfoText = app.getToolInfo("text")
+
+        app.addTexts({
+            texts = {
+                {
+                    text = dateString,
+                    font = {
+                        name = toolInfoText["font"]["name"],
+                        size = fontSize,
+                    },
+                    color = fontColor,
+                    x = docStructure["pages"][docStructure["currentPage"]]["pageWidth"] -
+                        string.len(dateString) * fontSize,
+                    y = fontSize * 2,
+                },
+            },
+        })
+    end
+
+    app.refreshPage()
+
+    -- Copy the current date to the clipboard
     -- Linux
-    os.execute("echo '" .. getCurrentDate() .. "' | xclip -selection clipboard")
+    os.execute("echo '" .. dateString .. "' | xclip -selection clipboard")
     -- Windows
-    os.execute("echo " .. getCurrentDate() .. " | clip.exe")
+    os.execute("echo " .. dateString .. " | clip.exe")
 end

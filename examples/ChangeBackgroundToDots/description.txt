@@ -1,0 +1,1 @@
+Registers a toolbar icon that changes the current page background to dots.

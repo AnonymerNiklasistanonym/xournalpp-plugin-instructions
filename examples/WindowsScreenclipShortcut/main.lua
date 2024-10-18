@@ -4,7 +4,7 @@ function initUi()
         ["menu"] = "Make screenshot (Screenclip)", -- menu bar entry/tooltip text
         ["callback"] = "run", -- function to run on click
         ["toolbarId"] = "WINDOWS_SCREENCLIP_SHORTCUT", -- toolbar ID
-        ["iconName"] = "icon-screenshot-seletion", -- the icon ID
+        ["iconName"] = "icon-screenshot-selection", -- the icon ID
     })
 end
 

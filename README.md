@@ -150,3 +150,48 @@ A full list of all available functions that can be used inside the plugin script
 ### `.lua` Language
 
 - Documentation: https://www.lua.org/pil/contents.html
+
+### Run plugin copy scripts
+
+There is a script for Linux and for Windows to easily copy the plugins to the right (default) directories:
+
+#### Linux
+
+```sh
+cd examples
+# When not using git to download the repository the copy script needs to be marked as executable
+chmod +x copy_linux.sh
+./copy_linux.sh
+```
+
+### Windows
+
+> [!WARNING]
+> Since icons on Windows need to be moved to the `%ProgramFiles%` directory it requires to launch the script in a terminal with admin rights.
+
+```pwsh
+cd examples
+# > Per default you can't run Powershell scripts on Windows because 'CurrentUser' is set to RemoteSigned
+Get-ExecutionPolicy -List
+#        Scope ExecutionPolicy
+#        ----- ---------------
+#MachinePolicy       Undefined
+#   UserPolicy       Undefined
+#      Process       Undefined
+#  CurrentUser    RemoteSigned
+# LocalMachine    Unrestricted
+# > If running in a terminal with admin rights this can be changed
+Set-ExecutionPolicy -ExecutionPolicy Unrestricted -Scope CurrentUser
+# > There is an additional dialog where 'Run Once' is enough
+.\copy_windows.ps1
+
+Security warning
+Run only scripts that you trust. While scripts from the internet can be useful, this script can potentially harm your
+computer. If you trust this script, use the Unblock-File cmdlet to allow the script to run without this warning
+message. Do you want to run
+C:\Users\username\Downloads\xournalpp-plugin-instructions-main\xournalpp-plugin-instructions-main\examples\copy_windows.ps
+1?
+[D] Do not run  [R] Run once  [S] Suspend  [?] Help (default is "D"): R
+# > After running the script it's possible to reset to default settings
+$ Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
+```

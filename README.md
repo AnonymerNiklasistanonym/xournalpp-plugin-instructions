@@ -22,6 +22,18 @@ Summary on how to write [`xournalpp`](https://github.com/xournalpp/xournalpp/) p
 >
 > To find a custom color either use the internal color picker, search for color picker on google or use https://htmlcolors.com/google-color-picker.
 
+**Table of contents:**
+
+- [Structure](#structure1)
+- [Install](#install2)
+- [Write](#write)
+- [TODO](#todo)
+- [More](#more)
+  - [`.ini` Properties](#ini-properties)
+  - [`.lua` Language](#lua-language)
+  - [Icon IDs](#icon-ids)
+  - [Run plugin copy scripts](#run-plugin-copy-scripts)
+
 ## Structure[^1]
 
 ```text
@@ -118,15 +130,27 @@ After this manual step it can be moved around with the built in toolbar customiz
 - [Dialogs](./examples/ExampleDialogs/)
 - [Global variables](./examples/ExampleGlobalVariables/)
 - [Toolbar icon](./examples/ExampleToolbarIcon/)
+- [Toolbar icon (Custom icon)](./examples/ExampleToolbarIconCustom/)
 - [External commands](./examples/ExampleExternalCommands/)
+- [Multiple scripts](./examples/ExampleMultipleScripts/)
 
-A full list of all available functions that can be used inside the plugin scripts can be found here: https://github.com/xournalpp/xournalpp/blob/master/plugins/luapi_application.def.lua
+A full list of all available `xournalpp` functions that can be used inside the plugin scripts can be found here: https://github.com/xournalpp/xournalpp/blob/master/plugins/luapi_application.def.lua
 
 ## TODO
 
 - [ ] How to use custom lua libs like `lgi`
   - https://github.com/xournalpp/xournalpp/discussions/4522
-- [ ] Multiple `.lua` files (`require "mode"`)
+
+## More
+
+### `.ini` Properties
+
+- allow no multiple line strings
+  - but inserting literally `\n` in the description of a plugin adds a line break
+
+### `.lua` Language
+
+- Documentation: https://www.lua.org/pil/contents.html
 
 ### Icon IDs
 
@@ -139,17 +163,6 @@ A full list of all available functions that can be used inside the plugin script
 - The default `xournalpp` icons can be found in:
   - **Linux:** `/usr/share/xournalpp/ui/iconsColor-dark/hicolor/scalable/actions/`
   - **Windows:** `C:\Program Files\Xournal++\share\xournalpp\ui\iconsColor-dark/hicolor/scalable/actions/`
-
-## More
-
-### `.ini` Properties
-
-- allow no multiple line strings
-  - but inserting literally `\n` in the description of a plugin adds a line break
-
-### `.lua` Language
-
-- Documentation: https://www.lua.org/pil/contents.html
 
 ### Run plugin copy scripts
 

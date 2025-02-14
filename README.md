@@ -90,7 +90,7 @@ To add a plugin to the local `xournalpp` installation:
 
 1. The directory needs to be copied to the [Config folder](https://xournalpp.github.io/guide/file-locations/#where-to-find-xournal-files):
    - `$HOME/.config/xournalpp/plugins` (Linux)
-   - `%AppData%\Local\xournalpp\plugins` (Windows)
+   - `%LOCALAPPDATA%\xournalpp\plugins` (Windows)
 2. Now restart/open `xournalpp` to find the plugin listed in a popup window via the menu bar `Plugin` > `Plugin Manager`
    - If the plugin is not enabled per default, enable it by checking the checkbox and restart `xournalpp`
 3. In case the plugin supports a toolbar icon shortcut you want to use read the next section on how to manually add it to your toolbar after the successful installation
@@ -104,7 +104,7 @@ To add a plugin to the local `xournalpp` installation:
 To add toolbar shortcuts of plugins that register them you need to edit manually the `toolbar.ini` file found in the [Config folder](https://xournalpp.github.io/guide/file-locations/#where-to-find-xournal-files):
 
 - `$HOME/.config/xournalpp` (Linux)
-- `%AppData%\Local\xournalpp` (Windows)
+- `%LOCALAPPDATA%\xournalpp` (Windows)
 
 This file lists the toolbar icons as their IDs like the following example:
 
@@ -157,9 +157,9 @@ A full list of all available `xournalpp` functions that can be used inside the p
 - All `.svg` files seem to be useable by stripping their parent directory path and the file extension
   - `../document-revert-rtl-symbolic.svg` -> `document-revert-rtl`
   - `../nvtop.svg` -> `nvtop`
-- Directory for existing and custom icons:
+- (GTK) Icon directories for existing and custom icons:
   - **Linux:** `/usr/share/icons/` or `$HOME/.local/share/icons/`
-  - **Windows:** `C:\Program Files\Xournal++\share\icons`
+  - **Windows:** `C:\Program Files\Xournal++\share\icons` or `%LOCALAPPDATA%/icons/`
 - The default `xournalpp` icons can be found in:
   - **Linux:** `/usr/share/xournalpp/ui/iconsColor-dark/hicolor/scalable/actions/`
   - **Windows:** `C:\Program Files\Xournal++\share\xournalpp\ui\iconsColor-dark/hicolor/scalable/actions/`
@@ -179,22 +179,19 @@ chmod +x copy_linux.sh
 
 ### Windows
 
-> [!WARNING]
-> Since icons on Windows need to be moved to the `%ProgramFiles%` directory it requires to launch the script in a terminal with admin rights.
-
 ```pwsh
 cd examples
-# > Per default you can't run Powershell scripts on Windows because 'CurrentUser' is set to RemoteSigned
+# > Per default you can't run Powershell scripts on Windows because 'CurrentUser' is set to Restricted
 Get-ExecutionPolicy -List
 #        Scope ExecutionPolicy
 #        ----- ---------------
 #MachinePolicy       Undefined
 #   UserPolicy       Undefined
 #      Process       Undefined
-#  CurrentUser    RemoteSigned
-# LocalMachine    Unrestricted
-# > If running in a terminal with admin rights this can be changed
-Set-ExecutionPolicy -ExecutionPolicy Unrestricted -Scope CurrentUser
+#  CurrentUser      Restricted
+# LocalMachine      Restricted
+# > When changing to Unrestricted any script can be run
+Set-ExecutionPolicy -Scope CurrentUser -ExecutionPolicy Unrestricted
 # > There is an additional dialog where 'Run Once' is enough
 .\copy_windows.ps1
 
@@ -206,5 +203,5 @@ C:\Users\username\Downloads\xournalpp-plugin-instructions-main\xournalpp-plugin-
 1?
 [D] Do not run  [R] Run once  [S] Suspend  [?] Help (default is "D"): R
 # > After running the script it's possible to reset to default settings
-$ Set-ExecutionPolicy -ExecutionPolicy RemoteSigned -Scope CurrentUser
+$ Set-ExecutionPolicy -Scope CurrentUser Default
 ```

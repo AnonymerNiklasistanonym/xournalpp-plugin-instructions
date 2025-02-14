@@ -1,10 +1,9 @@
 #!/usr/bin/env pwsh
 
-$localAppData = [System.Environment]::GetFolderPath('LocalApplicationData')
-$programFiles = [System.Environment]::GetFolderPath('ProgramFiles')
+$DirLocalAppData = [System.Environment]::GetFolderPath('LocalApplicationData')
 
-$PLUGIN_DIR = Join-Path $localAppData "xournalpp\plugins"
-$ICON_DIR = Join-Path $programFiles "Xournal++\share\icons"
+$PLUGIN_DIR = Join-Path $DirLocalAppData "xournalpp\plugins"
+$ICON_DIR = Join-Path $DirLocalAppData "icons"
 
 $LOCAL_EXAMPLE_PLUGIN_DIRS = Get-ChildItem -Directory | ForEach-Object { $_.Name }
 $LOCAL_EXAMPLE_PLUGIN_ICONS = Get-ChildItem -Recurse -Filter *.svg | ForEach-Object { $_.FullName }
@@ -14,11 +13,6 @@ foreach ($LOCAL_EXAMPLE_PLUGIN_DIR in $LOCAL_EXAMPLE_PLUGIN_DIRS) {
     Write-Host "Copy plugin $LOCAL_EXAMPLE_PLUGIN_DIR to $EXAMPLE_PLUGIN_DIR"
     Remove-Item -Recurse -Force $EXAMPLE_PLUGIN_DIR -ErrorAction SilentlyContinue
     Copy-Item -Recurse $LOCAL_EXAMPLE_PLUGIN_DIR $EXAMPLE_PLUGIN_DIR
-}
-
-if (-not ([Security.Principal.WindowsPrincipal] [Security.Principal.WindowsIdentity]::GetCurrent()).IsInRole([Security.Principal.WindowsBuiltInRole]::Administrator)) {
-    Write-Host "The script is not running as Administrator. Can't copy icons..."
-    exit
 }
 
 New-Item -ItemType Directory -Force -Path $ICON_DIR | Out-Null

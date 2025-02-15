@@ -54,8 +54,8 @@ A plugin is stored in a directory with the name of it and contains:
   version=VERSION NUMBER
 
   [default]
-  # Disabled per default
-  enabled=false
+  # Enabled per default
+  enabled=true
 
   [plugin]
   # The main script file

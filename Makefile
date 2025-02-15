@@ -1,4 +1,4 @@
-LUA_FILES := $(shell find examples -name '*.lua')
+LUA_FILES := $(shell find examples -name '*.lua') $(shell find examplesSharedLibrary -name '*.lua')
 LUA_CHECKER ?= luacheck
 LUA_FORMAT ?= "${HOME}/.luarocks/bin/lua-format"
 PLUGIN_SUBDIRS := $(wildcard examples/*)

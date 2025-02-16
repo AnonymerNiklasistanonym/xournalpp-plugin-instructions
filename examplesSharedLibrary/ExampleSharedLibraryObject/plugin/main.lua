@@ -1,3 +1,5 @@
+local isOpenDialogAvailable = app.openDialog ~= nil
+
 -- Register all Toolbar actions and initialize all UI stuff
 function initUi()
     -- register menu bar entry and toolbar icon
@@ -9,18 +11,31 @@ function initUi()
     })
 end
 
--- Callback if the menu item is executed
-function run()
+local function openDialog(dialogMessage, options)
+    if isOpenDialogAvailable then
+        app.openDialog(dialogMessage, options)
+    else
+        app.msgbox(dialogMessage, options)
+    end
+end
+
+local function getLibraryPath(name)
     local is_windows = package.config:sub(1, 1) == "\\"
     local script_dir = debug.getinfo(1, "S").source:sub(2)
     local plugin_dir = script_dir:match(is_windows and "(.*\\)" or "(.*/)")
-    local library_path = plugin_dir .. "libExampleSharedLibraryObject." ..
+    local library_path = plugin_dir .. name .. "." ..
                              (is_windows and "dll" or "so")
-    print("Loading library...", is_windows, plugin_dir, library_path)
+    return library_path
+end
+
+-- Callback if the menu item is executed
+function run()
+    local library_path = getLibraryPath("libExampleSharedLibraryObject")
+    print("Loading library...", library_path)
 
     local helloWorldC = "luaopen_helloWorld"
     local helloWorld = assert(package.loadlib(library_path, helloWorldC))
-    app.msgbox("helloWorld: " .. helloWorld(), {[1] = "OK"})
+    openDialog("helloWorld: " .. helloWorld(), {[1] = "OK"})
 
     local loadCustomObjectC = "luaopen_loadCustomObject"
     local loadCustomObject = assert(package.loadlib(library_path,
@@ -34,7 +49,7 @@ function run()
     local outString = customObject:getString()
     local outTable = customObject:getTable()
     local outX, outY = customObject:getTuple()
-    app.msgbox(
+    openDialog(
         "CustomObject: outBoolean=" .. (outBoolean and "true" or "false") ..
             " outNumber=" .. outNumber .. " outString=" .. outString,
         {[1] = "outX=" .. outX, [2] = "outY=" .. outY})
@@ -45,7 +60,7 @@ function run()
     customObject:setNumber(69)
     customObject:setString("new string")
     customObject:setTable({[2] = "Maybe"})
-    app.msgbox("CustomObject (2): outString=" .. customObject:getString(),
+    openDialog("CustomObject (2): outString=" .. customObject:getString(),
                customObject:getTable())
 
     -- Manually collect garbage now which should delete the first object

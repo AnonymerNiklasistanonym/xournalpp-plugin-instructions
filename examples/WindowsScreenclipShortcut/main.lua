@@ -9,6 +9,11 @@ function initUi()
 end
 
 function run()
+    -- OS check
+    if package.config:sub(1, 1) ~= "\\" then
+        error("Screenclip is only available on Windows!")
+    end
+
     -- start Windows 11 screenclip process
     os.execute("explorer.exe ms-screenclip:")
 end

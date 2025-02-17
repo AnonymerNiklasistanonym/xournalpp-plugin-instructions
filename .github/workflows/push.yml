@@ -1,0 +1,141 @@
+name: Deploy
+
+on:
+  # Run CI when a new branch or tag is created
+  create:
+    # only run if the tag is a supported version tag
+    tags:
+      - "v*.*.*"
+  # Run CI when a new commit is pushed
+  push:
+    branches:
+      - main
+  # Run CI on pull requests to any branch
+  pull_request:
+  # Run CI on manual request
+  workflow_dispatch:
+
+
+jobs:
+  push-deploy:
+    strategy:
+        matrix:
+          os: [ubuntu-latest, windows-latest]
+    runs-on: ${{ matrix.os }}
+    env:
+      OS_NAME: ${{ startsWith(matrix.os, 'windows') && 'win' || 'linux' }}
+      APT_PACKAGES: |
+        build-essential
+        cmake
+        git
+        libcairo2-dev
+        liblua5.4-dev
+        librsvg2-dev
+        pkg-config
+      MSYS2_PACKAGES: |
+        base-devel
+        git
+        mingw-w64-x86_64-cmake
+        mingw-w64-x86_64-lua
+        mingw-w64-x86_64-cairo
+        mingw-w64-x86_64-librsvg
+        mingw-w64-x86_64-toolchain
+        pkg-config
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Install dependencies
+        if: startsWith(matrix.os, 'ubuntu')
+        run: |
+          sudo apt update
+          echo "$APT_PACKAGES" | xargs sudo apt install -y
+
+      - name: Set up MSYS2
+        if: startsWith(matrix.os, 'windows')
+        uses: msys2/setup-msys2@v2
+        with:
+          msystem: MINGW64
+          update: true
+          install: ${{ env.MSYS2_PACKAGES }}
+
+      - name: Build using CMake [MSYS2]
+        if: startsWith(matrix.os, 'windows')
+        shell: msys2 {0}
+        run: |
+          cmake -B build -S . -G "MinGW Makefiles" -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX="dist"
+          cmake --build build -j$(nproc)
+          cmake --install build
+        working-directory: examples_shared_lib
+
+      - name: Build using CMake
+        if: startsWith(matrix.os, 'ubuntu')
+        run: |
+          cmake -B build -S . -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX="dist"
+          cmake --build build -j$(nproc)
+          cmake --install build
+        working-directory: examples_shared_lib
+
+      - name: Upload built plugins
+        uses: actions/upload-artifact@v4
+        with:
+          name: dist_examples_shared_lib_${{ env.OS_NAME }}
+          path: examples_shared_lib/dist
+        continue-on-error: true
+
+  create-github-release:
+    strategy:
+      matrix:
+        os: [ubuntu-latest]
+    runs-on: ${{ matrix.os }}
+    # Only create a GitHub release if a new tag was pushed that starts with v
+    # and if the build step was successful
+    needs: push-deploy
+    if: startsWith(github.ref, 'refs/tags/v')
+    steps:
+    - name: Checkout Repository
+      uses: actions/checkout@v4
+    - name: Download all artifacts
+      uses: actions/download-artifact@v4
+      with:
+        path: artifacts
+    # This downloads all build steps artifacts into the directory 'artifacts':
+    # - dist_examples_shared_lib_${{ env.OS_NAME }} [win, linux]
+    #   - PLUGIN_NAME_DIR
+    #   - ...
+    - name: Create ZIP files for directories
+      run: |
+        mkdir -p ../artifacts_zipped
+        for dir in dist_examples_shared_lib_win/*/ ; do
+          [ -d "$dir" ] || continue
+          cd dist_examples_shared_lib_win
+          zip -r "../../artifacts_zipped/$(basename "$dir")_win.zip" "$(basename "$dir")"
+          cd ..
+        done
+        for dir in dist_examples_shared_lib_linux/*/ ; do
+          [ -d "$dir" ] || continue
+          cd dist_examples_shared_lib_linux
+          zip -r "../../artifacts_zipped/$(basename "$dir")_linux.zip" "$(basename "$dir")"
+          cd ..
+        done
+        cd ..
+        for dir in examples/*/ ; do
+          [ -d "$dir" ] || continue
+          cd examples
+          zip -r "../artifacts_zipped/$(basename "$dir").zip" "$(basename "$dir")"
+          cd ..
+        done
+      working-directory: artifacts
+    - name: Release
+      uses: softprops/action-gh-release@v2
+      with:
+        body_path: RELEASE_TEMPLATE.md
+        generate_release_notes: true
+        # Mark as prerelease if tag ends with b
+        prerelease: ${{ endsWith(github.ref_name, 'b') }}
+        files: |
+          ./artifacts_zipped/*.zip
+    # This creates a release for the current (new) version tag that includes:
+    # - all examples plugin directories as .zip files
+    # - all built examples_shared_lib plugin directories as .zip files

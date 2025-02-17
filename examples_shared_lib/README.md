@@ -13,6 +13,8 @@ cmake --install build
 cmake -B build -S . -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX="./dist"
 ```
 
+(*It is also possible to run this in this directory to build/install all of them at the same time*)
+
 ### MinGW 64 Cross Compilation (Windows)
 
 1. Install [MSYS2](https://www.msys2.org/)
@@ -21,9 +23,9 @@ cmake -B build -S . -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX="./dist"
 
 ```sh
 # Install build dependencies
-pacman -S base-devel git pkg-config mingw-w64-x86_64-cmake mingw-w64-x86_64-lua
+pacman -S base-devel git pkg-config mingw-w64-x86_64-cmake mingw-w64-x86_64-lua mingw-w64-x86_64-toolchain
 # Install plugin specific build dependencies
-mingw-w64-x86_64-cairo mingw-w64-x86_64-librsvg
+pacman -S mingw-w64-x86_64-cairo mingw-w64-x86_64-librsvg
 # Build & Install Windows
 cmake -B build -S . -G "MinGW Makefiles" -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX="/c/Users/$USER/AppData/Local/xournalpp/plugins" -DCMAKE_INSTALL_PREFIX_ICONS="/c/Users/$USER/AppData/Local/icons"
 cmake --build build -j$(nproc)

@@ -1,3 +1,7 @@
+-- Import functions from external files
+getLibPath = require("getLibPath")
+
+-- Global variables
 local isOpenDialogAvailable = app.openDialog ~= nil
 
 -- Register all Toolbar actions and initialize all UI stuff
@@ -19,27 +23,16 @@ local function openDialog(dialogMessage, options)
     end
 end
 
-local function getLibraryPath(name)
-    local is_windows = package.config:sub(1, 1) == "\\"
-    local script_dir = debug.getinfo(1, "S").source:sub(2)
-    local plugin_dir = script_dir:match(is_windows and "(.*\\)" or "(.*/)")
-    local library_path = plugin_dir .. name .. "." ..
-                             (is_windows and "dll" or "so")
-    return library_path
-end
-
 -- Callback if the menu item is executed
 function run()
-    local library_path = getLibraryPath("libExampleSharedLibraryObject")
-    print("Loading library...", library_path)
+    local libPath = getLibPath("libExampleSharedLibraryObject")
+    print("Loading library...", libPath)
 
-    local helloWorldC = "luaopen_helloWorld"
-    local helloWorld = assert(package.loadlib(library_path, helloWorldC))
+    local helloWorld = assert(package.loadlib(libPath, "luaopen_helloWorld"))
     openDialog("helloWorld: " .. helloWorld(), {[1] = "OK"})
 
-    local loadCustomObjectC = "luaopen_loadCustomObject"
-    local loadCustomObject = assert(package.loadlib(library_path,
-                                                    loadCustomObjectC))
+    local loadCustomObject = assert(package.loadlib(libPath,
+                                                    "luaopen_loadCustomObject"))
     loadCustomObject()
 
     -- Create first object

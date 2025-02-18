@@ -1,6 +1,7 @@
 -- Import functions from external files
 getDocumentCenter = require("getDocumentCenter")
 mmInXournalUnit = require("mmInXournalUnit")
+getLibPath = require("getLibPath")
 
 -- Register all Toolbar actions and initialize all UI stuff
 function initUi()
@@ -15,15 +16,6 @@ end
 
 local function mmToPixels(mm, dpi) return (mm / mmInXournalUnit) * dpi / 25.4 end
 
-local function getLibraryPath(name)
-    local is_windows = package.config:sub(1, 1) == "\\"
-    local script_dir = debug.getinfo(1, "S").source:sub(2)
-    local plugin_dir = script_dir:match(is_windows and "(.*\\)" or "(.*/)")
-    local library_path = plugin_dir .. name .. "." ..
-                             (is_windows and "dll" or "so")
-    return library_path
-end
-
 -- Callback if the menu item is executed
 function run()
     -- API check
@@ -34,10 +26,9 @@ function run()
     end
 
     -- Load shared library
-    local library_path = getLibraryPath("libExampleHighQualityVector")
-    local rasterizeVectorImageC = "luaopen_rasterizeVectorImage"
-    local rasterizeVectorImage = assert(package.loadlib(library_path,
-                                                        rasterizeVectorImageC))
+    local libPath = getLibPath("libExampleHighQualityVector")
+    local rasterizeVectorImage = assert(package.loadlib(libPath,
+                                                        "luaopen_rasterizeVectorImage"))
 
     -- Calculate target resolution for vector image
     local document = app:getDocumentStructure()

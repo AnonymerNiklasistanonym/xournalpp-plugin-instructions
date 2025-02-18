@@ -13,6 +13,7 @@ globals = {
     "setCoordinateSystemType",
     "setTickSpacing",
     "setRange",
+    "getLibPath",
     -- custom loaded functions
     "CustomObject",
 }

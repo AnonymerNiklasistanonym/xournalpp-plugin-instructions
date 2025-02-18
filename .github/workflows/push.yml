@@ -64,7 +64,7 @@ jobs:
         if: startsWith(matrix.os, 'windows')
         shell: msys2 {0}
         run: |
-          cmake -B build -S . -G "MinGW Makefiles" -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX="dist"
+          cmake -B build -S . -DCMAKE_INSTALL_PREFIX="dist"
           cmake --build build -j$(nproc)
           cmake --install build
         working-directory: examples_shared_lib
@@ -72,7 +72,7 @@ jobs:
       - name: Build using CMake
         if: startsWith(matrix.os, 'ubuntu')
         run: |
-          cmake -B build -S . -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX="dist"
+          cmake -B build -S . -DCMAKE_INSTALL_PREFIX="dist"
           cmake --build build -j$(nproc)
           cmake --install build
         working-directory: examples_shared_lib

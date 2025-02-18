@@ -6,11 +6,15 @@ In each of the following directories you can run the following commands to build
 
 ```sh
 # Build & Install Linux
-cmake -B build -S . -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX="$HOME/.config/xournalpp/plugins" -DCMAKE_INSTALL_PREFIX_ICONS="$HOME/.local/share/icons"
+# > Custom variables that are automatically set:
+#   -DCMAKE_BUILD_TYPE=Release
+#   -DCMAKE_INSTALL_PREFIX="$HOME/.config/xournalpp/plugins"
+#   -DCMAKE_INSTALL_PREFIX_ICONS="$HOME/.local/share/icons"
+# > For a local build to the directory 'dist' use:
+#   -DCMAKE_INSTALL_PREFIX="dist"
+cmake -B build -S .
 cmake --build build -j$(nproc)
 cmake --install build
-# Use the following configure command to output to local dist directory instead
-cmake -B build -S . -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX="./dist"
 ```
 
 (*It is also possible to run this in this directory to build/install all of them at the same time*)
@@ -27,7 +31,14 @@ pacman -S base-devel git pkg-config mingw-w64-x86_64-cmake mingw-w64-x86_64-lua 
 # Install plugin specific build dependencies
 pacman -S mingw-w64-x86_64-cairo mingw-w64-x86_64-librsvg
 # Build & Install Windows
-cmake -B build -S . -G "MinGW Makefiles" -DCMAKE_BUILD_TYPE=Release -DCMAKE_INSTALL_PREFIX="/c/Users/$USER/AppData/Local/xournalpp/plugins" -DCMAKE_INSTALL_PREFIX_ICONS="/c/Users/$USER/AppData/Local/icons"
+# > Custom variables that are automatically set:
+#   -DCMAKE_BUILD_TYPE=Release
+#   -G "MinGW Makefiles"
+#   -DCMAKE_INSTALL_PREFIX="/c/Users/$USER/AppData/Local/xournalpp/plugins"
+#   -DCMAKE_INSTALL_PREFIX_ICONS="/c/Users/$USER/AppData/Local/icons"
+# > For a local build to the directory 'dist' use:
+#   -DCMAKE_INSTALL_PREFIX="dist"
+cmake -B build -S .
 cmake --build build -j$(nproc)
 cmake --install build
 ```
@@ -44,4 +55,5 @@ cmake --install build
   +--src            (C++ sources)
   +--include        (C++ headers)
   +--CMakeLists.txt (C++ build & install instructions)
+  +--PreLoad.cmake  (C++ build & install instructions default settings)
 ```

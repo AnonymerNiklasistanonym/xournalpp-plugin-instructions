@@ -51,8 +51,8 @@ function run()
     local outX, outY = customObject:getTuple()
     openDialog(
         "CustomObject: outBoolean=" .. (outBoolean and "true" or "false") ..
-            " outNumber=" .. outNumber .. " outString=" .. outString,
-        {[1] = "outX=" .. outX, [2] = "outY=" .. outY})
+            " outNumber=" .. outNumber .. " outString=" .. outString .. " outX=" ..
+            outX .. " outY=" .. outY, outTable)
 
     -- Create second object
     customObject = CustomObject(false, 42, "test2", {[2] = "OKK"})
@@ -69,13 +69,13 @@ function run()
 
     -- Manually collect garbage a second time with the second object being set
     -- to nil which should delete it
-    customObject = nil
+    customObject = nil -- luacheck: ignore
     collectgarbage("collect")
     print("Collect")
 
     -- Create third object to showcase that this one only gets cleared after the
     -- program is closed
-    customObject = CustomObject(false, 3, "test3", {[3] = "OK"})
+    customObject = CustomObject(false, 3, "test3", {[3] = "OK"}) -- luacheck: ignore
 
     print("Unloading library...")
 end

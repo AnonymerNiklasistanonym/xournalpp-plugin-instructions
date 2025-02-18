@@ -13,8 +13,6 @@ function initUi()
     })
 end
 
-local dpi = 200
-
 local function mmToPixels(mm, dpi) return (mm / mmInXournalUnit) * dpi / 25.4 end
 
 local function getLibraryPath(name)
@@ -47,6 +45,7 @@ function run()
     local pageWidth = currentPage["pageWidth"]
     local pageHeight = currentPage["pageHeight"]
     -- Convert the width and height to pixels
+    local dpi = 200
     local pageWidthPixels = mmToPixels(pageWidth, dpi)
     local pageHeightPixels = mmToPixels(pageHeight, dpi)
     print("Target resolution: " .. pageWidthPixels .. "x" .. pageHeightPixels)

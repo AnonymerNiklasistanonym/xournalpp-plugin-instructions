@@ -2,14 +2,16 @@ cmake_minimum_required(VERSION 3.22.1)
 project(ExampleSharedLibraryObject)
 
 # Options
-set(CMAKE_INSTALL_PREFIX_PLUGIN ${CMAKE_INSTALL_PREFIX}/${PROJECT_NAME})
 set(CMAKE_INSTALL_PREFIX_ICONS "" CACHE PATH "Installation path for icons")
 
 # Global variables
+set(CMAKE_INSTALL_PREFIX_PLUGIN ${CMAKE_INSTALL_PREFIX}/${PROJECT_NAME})
 set(SRC_DIR ${CMAKE_CURRENT_SOURCE_DIR}/src)
+file(GLOB_RECURSE SRC_FILES ${SRC_DIR}/*.cpp)
 set(HEADER_DIR ${CMAKE_CURRENT_SOURCE_DIR}/include)
 set(PLUGIN_DIR ${CMAKE_CURRENT_SOURCE_DIR}/plugin)
 message(STATUS "SRC_DIR: ${SRC_DIR}")
+message(STATUS "SRC_FILES: ${SRC_FILES}")
 message(STATUS "HEADER_DIR: ${HEADER_DIR}")
 message(STATUS "PLUGIN_DIR: ${PLUGIN_DIR}")
 
@@ -24,10 +26,6 @@ endif()
 find_package(Lua 5.4 REQUIRED)
 message(STATUS "LUA_INCLUDE_DIR: ${LUA_INCLUDE_DIR}")
 message(STATUS "LUA_LIBRARIES: ${LUA_LIBRARIES}")
-
-# Register local sources
-file(GLOB_RECURSE SRC_FILES ${SRC_DIR}/*.cpp)
-message(STATUS "SRC_FILES: ${SRC_FILES}")
 
 # Create shared library
 add_library(${PROJECT_NAME} SHARED ${SRC_FILES})

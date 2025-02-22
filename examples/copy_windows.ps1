@@ -1,5 +1,8 @@
 #!/usr/bin/env pwsh
 
+# Temporarily bypass Execution Policy if it is determined by a Group Policy:
+# $ powershell -ExecutionPolicy Bypass
+
 $DirLocalAppData = [System.Environment]::GetFolderPath('LocalApplicationData')
 
 $PLUGIN_DIR = Join-Path $DirLocalAppData "xournalpp\plugins"

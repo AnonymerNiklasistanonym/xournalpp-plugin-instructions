@@ -5,6 +5,14 @@ globals = {
     "initUi",
     -- plugin global function to run a script
     "run",
+    -- plugin specific global functions
+    "run_dotted",
+    "run_plain",
+    "run_lined",
+    "run_ruled",
+    "run_graph",
+    "run_isodotted",
+    "run_isograph",
     -- custom global functions in external files
     "drawGaussianCoordinateSystem",
     "getDocumentCenter",

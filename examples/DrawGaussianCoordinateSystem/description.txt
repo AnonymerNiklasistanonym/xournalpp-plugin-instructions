@@ -1,2 +1,0 @@
-Registers a toolbar icon that draws a Gaussian coordinate system in the middle of the current page.
-It provides options for 2D, 3D negative axes and custom tick spacing and axis ranges.

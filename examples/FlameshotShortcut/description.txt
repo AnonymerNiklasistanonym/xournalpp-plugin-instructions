@@ -1,2 +1,0 @@
-Registers a toolbar icon with which the Flameshot launcher process can be triggered.
-It allows you to make a screenshot and copy it to the clipboard (can be full, selection or freeform).

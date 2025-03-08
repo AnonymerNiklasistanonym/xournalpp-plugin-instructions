@@ -1,4 +1,0 @@
-Registers a toolbar icon that copies the current date to the clipboard.
-If supported (xournalpp version 1.2.3 nightly or higher) also adds it to the top right of the current page.
-
-Linux requirements: Requires xclip to add the date to the clipboard.

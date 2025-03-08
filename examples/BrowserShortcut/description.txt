@@ -1,1 +1,0 @@
-Registers a toolbar icon that opens an URL in the default browser.

@@ -13,6 +13,7 @@ globals = {
     "run_graph",
     "run_isodotted",
     "run_isograph",
+    "run_region",
     -- custom global functions in external files
     "drawGaussianCoordinateSystem",
     "getDocumentCenter",

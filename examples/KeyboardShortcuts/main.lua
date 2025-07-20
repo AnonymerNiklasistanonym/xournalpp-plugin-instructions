@@ -1,4 +1,4 @@
--- Table of actions: key = id, value = {func = function, label = name, accel = keyboard shortcut}
+-- table of actions: key = id, value = {func = function, label = name, accel = keyboard shortcut}
 local actions = {
     pen = {
         func = function()
@@ -86,7 +86,7 @@ local actions = {
 
 function initUi()
     for actionId, data in pairs(actions) do
-        -- Register each action with a menu entry but no toolbar icon
+        -- register each action with a menu entry but no toolbar icon
         app.registerUi({
             menu = "Switch to " .. data.label,
             callback = actionId,

@@ -1,6 +1,6 @@
 local windowsScreenshotCommand = "explorer.exe ms-screenclip:"
 local linuxScreenshotCommandSpectacle =
-    "spectacle --region --no-shadow --nonotify --background"
+    "spectacle --region --no-shadow --nonotify --background --copy-image"
 -- the full spectacle launcher
 -- local linuxScreenshotCommandSpectacleLauncher = "spectacle --no-shadow --nonotify --background --launchonly"
 -- flameshot has problems with multi monitor setups on Wayland
